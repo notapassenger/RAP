@@ -10,13 +10,13 @@ Md = size(ATF.array.dCtrPtsPositions, 1);
 N = size(ATF.array.s, 1); % the number of Loudspeakers array.  
 
 % get Hb and Hd.
-Fs = ATF.irTrueResampled.fsResampled;% sample frequency
-f = ATF.irTrueResampled.f; % true Analog frequency
-fSpace = 1; % removed frequency bins, User variable
-f_max = floor(length(f)/fSpace);% The total number of frequency points taken
-HB = ATF.irTrueResampled.HB;
-HD = ATF.irTrueResampled.HD;
-HBDesired = ATF.HBDesiredResampled;
+Fs = ATF.irTrue.fsResampled;% sample frequency
+f = ATF.irTrue.f; % true Analog frequency
+fSpace = 4; % removed frequency bins, User variable
+frequencyBins = floor(length(f)/fSpace);% The total number of frequency points taken
+HB = ATF.irTrue.HB;
+HD = ATF.irTrue.HD;
+HBDesired = ATF.irDesired.HB;
 % HBDesired = squeeze(ATF.irTrueResampled.HB(:, 8, :));
 HBMeasured = ATF.irMeasured.HB;
 NoisyNumber = size(HBMeasured, 4);
@@ -43,7 +43,6 @@ clear HB HBE HD HDE HBMeasured HB;
 %     [AC_ACCNoisyPre(:, i)] = ACC(squeeze(HbMeasured(:, :, :, i)), Hd, HbE, HdE, 0);
 % end
 % AC_ACCNoisy = mean(AC_ACCNoisyPre, 2);
-%%
 figure(1)
 plot(f(1:fSpace:end), AC_ACC);
 % hold on;
@@ -69,13 +68,15 @@ ed = db2mag(-21)^2;
 NoisyNumber = 1;
 % startnew = 11;
 % endnew = 20;
-Index = 1:1:801;
+Index = 1:1:frequencyBins;
 % AC_PMNoisyPre = zeros(size(HbMeasured, 3), NoisyNumber);
 Lindex = length(Index);
 AC_PMNoisyPre = zeros(NoisyNumber, Lindex);
 NSDE_PMNoisyPre = zeros(NoisyNumber, Lindex);
+tic
 [AC_PM, NSDE_PM, w_PM] = PM(Hb(:, :, Index), Hd(:, :, Index), ...
     Hb(:, :, Index), Hd(:, :, Index), HbDesired(:, Index), 0, eh, ed);
+toc
 %%
 for i = 1:NoisyNumber
     [AC_PMNoisyPre(i, :), NSDE_PMNoisyPre(i, :), ~] = PM(squeeze(HbMeasured(:, :, Index, i+19)), ...
